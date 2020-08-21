@@ -1,8 +1,10 @@
 package com.redislabs.university.RU102J.dao;
 
 import com.redislabs.university.RU102J.api.Site;
+import com.redislabs.university.RU102J.core.KeyHelper;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.Response;
 
 import java.util.*;
 
@@ -42,7 +44,15 @@ public class SiteDaoRedisImpl implements SiteDao {
     @Override
     public Set<Site> findAll() {
         // START Challenge #1
-        return Collections.emptySet();
+        Set<Site> result = new HashSet<>();
+
+        try(Jedis jedis = jedisPool.getResource()) {
+            Set<String> keys = jedis.keys(KeyHelper.getKey("sites:info:[0-9]*"));
+            for(String key : keys)
+                result.add(new Site(jedis.hgetAll(key)));
+        }
+
+        return result;
         // END Challenge #1
     }
 }
